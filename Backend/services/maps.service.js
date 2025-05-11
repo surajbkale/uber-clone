@@ -1,7 +1,7 @@
 const axios = require("axios");
 
 module.exports.getAddressCoordinate = async (address) => {
-  const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+  const apiKey = process.env.GOOGLE_MAPS_API;
   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
     address
   )}&key=${apiKey}`;
@@ -18,6 +18,7 @@ module.exports.getAddressCoordinate = async (address) => {
       throw new Error("Unable to fetch coordinates");
     }
   } catch (error) {
+    console.error(error);
     throw error;
   }
 };
