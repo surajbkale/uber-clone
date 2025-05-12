@@ -7,17 +7,32 @@ module.exports.createRide = async (req, res) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { userId, pickup, destination, vehicleType } = req.body;
+  const { pickup, destination, vehicleType } = req.body;
 
   try {
-    const ride = await rideService.createRide({
+    const { ride, fare, distance, duration } = await rideService.createRide({
       user: req.user._id,
       pickup,
       destination,
       vehicleType,
     });
-    return res.status(201).json(ride);
+
+    // Format the response correctly by including fare directly on ride object
+    return res.status(201).json({
+      success: true,
+      message: "Ride created successfully",
+      data: {
+        user: ride.user,
+        pickup: ride.pickup,
+        destination: ride.destination,
+        fare: fare.toFixed(2),  // Round the fare to 2 decimal places
+        status: "pending",      // Default status
+        otp: ride.otp,
+        _id: ride._id,
+      },
+    });
   } catch (err) {
+    console.error(err);
     return res.status(500).json({ message: err.message });
   }
 };
