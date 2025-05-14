@@ -18,18 +18,21 @@ async function getFare(pickup, destination) {
   const perMinuteRate = { auto: 1.8, car: 2.5, moto: 1.5 };
 
   const fare = {
-    auto:
+    auto: Math.round(
       baseFare.auto +
-      distanceInKm * perKmRate.auto +
-      durationInMin * perMinuteRate.auto,
-    car:
+        distanceInKm * perKmRate.auto +
+        durationInMin * perMinuteRate.auto
+    ),
+    car: Math.round(
       baseFare.car +
-      distanceInKm * perKmRate.car +
-      durationInMin * perMinuteRate.car,
-    moto:
+        distanceInKm * perKmRate.car +
+        durationInMin * perMinuteRate.car
+    ),
+    moto: Math.round(
       baseFare.moto +
-      distanceInKm * perKmRate.moto +
-      durationInMin * perMinuteRate.moto,
+        distanceInKm * perKmRate.moto +
+        durationInMin * perMinuteRate.moto
+    ),
   };
 
   return {
@@ -78,3 +81,5 @@ module.exports.createRide = async ({
     duration,
   };
 };
+
+module.exports.getFare = getFare;
