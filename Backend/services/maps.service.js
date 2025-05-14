@@ -42,7 +42,7 @@ module.exports.getPlaceSuggestions = async (text) => {
 
   return response.data.map((place) => ({
     display_name: place.display_name,
-    lat: place.lat,
-    lon: place.lon,
+    // lat: place.lat,
+    // lon: place.lon,
   }));
 };
