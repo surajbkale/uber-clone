@@ -1,6 +1,6 @@
 const socketIo = require("socket.io");
-const userModel = require("./models/userModel");
-const captainModel = require("./models/captainModel");
+const userModel = require("./models/user.model");
+const captainModel = require("./models/captain.Model");
 
 let io;
 
