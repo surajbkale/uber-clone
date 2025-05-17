@@ -1,6 +1,7 @@
 const axios = require("axios");
+const captainModel = require("../models/captain.model");
 
-// Helper: Get coordinates from address (using OpenCage API or OpenStreetMap Nominatim)
+// Existing function: Get coordinates from address
 async function getCoordinates(address) {
   const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
     address
@@ -15,10 +16,19 @@ async function getCoordinates(address) {
   return { lat, lon };
 }
 
+// 🚨 ADDING this — getAddressCoordinate using OpenStreetMap (same logic as getCoordinates)
+module.exports.getAddressCoordinate = async (address) => {
+  const { lat, lon } = await getCoordinates(address);
+  return {
+    ltd: parseFloat(lat),
+    lng: parseFloat(lon),
+  };
+};
+
+// Existing function: getDistanceTime using OpenRouteService
 module.exports.getDistanceTime = async (origin, destination) => {
   const apiKey = process.env.ORS_API_KEY;
 
-  // Get coordinates for origin & destination
   const originCoords = await getCoordinates(origin);
   const destinationCoords = await getCoordinates(destination);
 
@@ -33,6 +43,7 @@ module.exports.getDistanceTime = async (origin, destination) => {
   };
 };
 
+// Existing function: getPlaceSuggestions using Nominatim
 module.exports.getPlaceSuggestions = async (text) => {
   const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
     text
@@ -42,7 +53,18 @@ module.exports.getPlaceSuggestions = async (text) => {
 
   return response.data.map((place) => ({
     display_name: place.display_name,
-    // lat: place.lat,
-    // lon: place.lon,
   }));
+};
+
+module.exports.getCaptainsInTheRadius = async (ltd, lng, radius) => {
+  // radius in km
+  const captains = await captainModel.find({
+    location: {
+      $geoWithin: {
+        $centerSphere: [[ltd, lng], radius / 6371],
+      },
+    },
+  });
+
+  return captains;
 };

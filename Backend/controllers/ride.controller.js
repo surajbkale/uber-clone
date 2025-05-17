@@ -1,5 +1,7 @@
 const rideService = require("../services/ride.service");
+const mapService = require("../services/maps.service"); // your OpenRouteService wrapper
 const { validationResult } = require("express-validator");
+const { sendMessageToSocketId } = require("../socket");
 
 module.exports.createRide = async (req, res) => {
   const errors = validationResult(req);
@@ -17,7 +19,28 @@ module.exports.createRide = async (req, res) => {
       vehicleType,
     });
 
-    // Format the response correctly by including fare directly on ride object
+    // Fetch pickup coordinates using OpenRouteService
+    const pickupCoordinates = await mapService.getAddressCoordinate(pickup);
+    console.log("Pickup Coordinates:", pickupCoordinates);
+
+    // Find captains within a 2km radius from pickup point
+    const captainsInRadius = await mapService.getCaptainsInTheRadius(
+      pickupCoordinates.lat, // note: ensure your mapService returns lat/lng keys
+      pickupCoordinates.lng,
+      2 // radius in KM
+    );
+
+    console.log("Captains in radius:", captainsInRadius);
+
+    // Send ride request to captains in radius via socket
+    captainsInRadius.forEach((captain) => {
+      sendMessageToSocketId(captain.socketId, {
+        event: "new-ride",
+        data: ride,
+      });
+    });
+
+    // Respond to client
     return res.status(201).json({
       success: true,
       message: "Ride created successfully",
@@ -25,10 +48,12 @@ module.exports.createRide = async (req, res) => {
         user: ride.user,
         pickup: ride.pickup,
         destination: ride.destination,
-        fare: fare.toFixed(2), // Round the fare to 2 decimal places
-        status: "pending", // Default status
+        fare: fare.toFixed(2),
+        status: "pending",
         otp: ride.otp,
         _id: ride._id,
+        distance,
+        duration,
       },
     });
   } catch (err) {
