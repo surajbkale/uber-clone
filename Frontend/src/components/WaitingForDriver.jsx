@@ -26,7 +26,7 @@ const WaitingForDriver = (props) => {
             {props.ride?.captain.vehicle.plate}
           </h4>
           <p className="text-sm text-gray-600">Maruti Suzuki Alto</p>
-          <h1 className="text-lg font-semibold">{props.ride?.otp}</h1>
+          <h1 className="text-lg font-semibold"> {props.ride?.otp} </h1>
         </div>
       </div>
 
@@ -53,7 +53,7 @@ const WaitingForDriver = (props) => {
           <div className="flex items-center gap-5 p-3">
             <i className="ri-currency-line"></i>
             <div>
-              <h3 className="text-lg font-medium">₹{props.ride?.fare}</h3>
+              <h3 className="text-lg font-medium">₹{props.ride?.fare} </h3>
               <p className="text-sm -mt-1 text-gray-600">Cash Cash</p>
             </div>
           </div>
