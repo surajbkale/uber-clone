@@ -22,7 +22,7 @@ module.exports.authUser = async (req, res, next) => {
     const user = await userModel.findById(decoded._id);
 
     req.user = user;
-    
+
     return next();
   } catch (error) {
     return res.status(401).json({ message: "Unauthorized" });
@@ -31,6 +31,8 @@ module.exports.authUser = async (req, res, next) => {
 
 module.exports.authCaptain = async (req, res, next) => {
   const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
+
+  console.log(req.headers);
 
   console.log(token);
 
