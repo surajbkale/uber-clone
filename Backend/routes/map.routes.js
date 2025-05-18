@@ -21,8 +21,9 @@ router.get(
 
 router.get(
   "/get-suggestions",
-  query("input").isString().isLength({ min: 2 }),
-  mapController.getAutocompleteSuggestions
+  query("input").isString().isLength({ min: 3 }),
+  authMiddleware.authUser,
+  mapController.getAutoCompleteSuggestions
 );
 
 module.exports = router;
