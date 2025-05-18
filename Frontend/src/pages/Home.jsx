@@ -36,13 +36,6 @@ const Home = () => {
   const { user } = useContext(UserDataContext);
 
   useEffect(() => {
-    // if (!user || user._id) {
-    //   console.log("User data is not available: ", user);
-    //   return;
-    // }
-
-    console.log(user);
-    console.log(user._id);
     socket.emit("join", { userType: "user", userId: user._id });
   }, [user]);
 
