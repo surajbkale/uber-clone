@@ -1,62 +1,85 @@
 const axios = require("axios");
 const captainModel = require("../models/captain.model");
 
-// Existing function: Get coordinates from address
-async function getCoordinates(address) {
-  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+module.exports.getAddressCoordinate = async (address) => {
+  const apiKey = process.env.GOOGLE_MAPS_API;
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
     address
-  )}`;
+  )}&key=${apiKey}`;
 
-  const response = await axios.get(url);
-  if (response.data.length === 0) {
-    throw new Error(`Coordinates not found for ${address}`);
+  try {
+    const response = await axios.get(url);
+    if (response.data.status === "OK") {
+      const location = response.data.results[0].geometry.location;
+      return {
+        ltd: location.lat,
+        lng: location.lng,
+      };
+    } else {
+      throw new Error("Unable to fetch coordinates");
+    }
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+module.exports.getDistanceTime = async (origin, destination) => {
+  if (!origin || !destination) {
+    throw new Error("Origin and destination are required");
   }
 
-  const { lat, lon } = response.data[0];
-  return { lat, lon };
-}
+  const apiKey = process.env.GOOGLE_MAPS_API;
 
-// 🚨 ADDING this — getAddressCoordinate using OpenStreetMap (same logic as getCoordinates)
-module.exports.getAddressCoordinate = async (address) => {
-  const { lat, lon } = await getCoordinates(address);
-  return {
-    ltd: parseFloat(lat),
-    lng: parseFloat(lon),
-  };
+  const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(
+    origin
+  )}&destinations=${encodeURIComponent(destination)}&key=${apiKey}`;
+
+  try {
+    const response = await axios.get(url);
+    if (response.data.status === "OK") {
+      if (response.data.rows[0].elements[0].status === "ZERO_RESULTS") {
+        throw new Error("No routes found");
+      }
+
+      return response.data.rows[0].elements[0];
+    } else {
+      throw new Error("Unable to fetch distance and time");
+    }
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
 };
 
-// Existing function: getDistanceTime using OpenRouteService
-module.exports.getDistanceTime = async (origin, destination) => {
-  const apiKey = process.env.ORS_API_KEY;
+module.exports.getAutoCompleteSuggestions = async (input) => {
+  if (!input) {
+    throw new Error("query is required");
+  }
 
-  const originCoords = await getCoordinates(origin);
-  const destinationCoords = await getCoordinates(destination);
+  const apiKey = process.env.GOOGLE_MAPS_API;
+  const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
+    input
+  )}&key=${apiKey}`;
 
-  const url = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${originCoords.lon},${originCoords.lat}&end=${destinationCoords.lon},${destinationCoords.lat}`;
-
-  const response = await axios.get(url);
-  const route = response.data.features[0].properties.segments[0];
-
-  return {
-    distance: `${(route.distance / 1000).toFixed(2)} km`,
-    duration: `${(route.duration / 60).toFixed(2)} min`,
-  };
+  try {
+    const response = await axios.get(url);
+    if (response.data.status === "OK") {
+      return response.data.predictions
+        .map((prediction) => prediction.description)
+        .filter((value) => value);
+    } else {
+      throw new Error("Unable to fetch suggestions");
+    }
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
 };
 
-// Existing function: getPlaceSuggestions using Nominatim
-module.exports.getPlaceSuggestions = async (text) => {
-  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-    text
-  )}&addressdetails=1&limit=5`;
+module.exports.getCaptainsInTheRadius = async (ltd, lng, radius) => {
+  // radius in km
 
-  const response = await axios.get(url);
-
-  return response.data.map((place) => ({
-    display_name: place.display_name,
-  }));
-};
-
-module.exports.getCaptainsInRadius = async (ltd, lng, radius) => {
   const captains = await captainModel.find({
     location: {
       $geoWithin: {
@@ -64,5 +87,6 @@ module.exports.getCaptainsInRadius = async (ltd, lng, radius) => {
       },
     },
   });
+
   return captains;
 };

@@ -67,10 +67,7 @@ const captainSchema = new mongoose.Schema({
       type: Number,
     },
   },
-
 });
-
-
 
 captainSchema.methods.generateAuthToken = function () {
   const token = jwt.sign({ _id: this._id }, process.env.JWT_SECRET, {
@@ -87,9 +84,6 @@ captainSchema.statics.hashPassword = async function (password) {
   return await bcrypt.hash(password, 10);
 };
 
-// const captainModel = mongoose.model("captain", captainSchema);
+const captainModel = mongoose.model("captain", captainSchema);
 
-// module.exports = captainModel;
-
-module.exports =
-  mongoose.models.captain || mongoose.model("captain", captainSchema);
+module.exports = captainModel;
