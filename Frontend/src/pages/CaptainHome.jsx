@@ -1,10 +1,9 @@
 import React, { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import CaptainDetails from "../components/CaptainDetails.jsx";
-import RidePopUp from "../components/RidePopUp.jsx";
+import RidePopUp from "../components/RidePopUp";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import ConfirmRide from "../components/ConfirmRide.jsx";
 import ConfirmRidePopUp from "../components/ConfirmRidePopUp.jsx";
 import { useEffect, useContext } from "react";
 import { SocketContext } from "../context/SocketContext.jsx";
@@ -30,9 +29,6 @@ const CaptainHome = () => {
     const updateLocation = () => {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition((position) => {
-          const latitude = position.coords.latitude;
-          const longitude = position.coords.longitude;
-          console.log(latitude, longitude);
           socket.emit("update-location-captain", {
             userId: captain._id,
             location: {
@@ -44,15 +40,13 @@ const CaptainHome = () => {
       }
     };
 
-    setInterval(updateLocation, 10000);
+    const locationInterval = setInterval(updateLocation, 10000);
     updateLocation();
 
     // return () => clearInterval(locationInterval)
   }, []);
 
   socket.on("new-ride", (data) => {
-    console.log("Here.....");
-    console.log(data);
     setRide(data);
     setRidePopupPanel(true);
   });
@@ -146,6 +140,7 @@ const CaptainHome = () => {
         className="fixed w-full h-screen z-10 bottom-0 translate-y-full bg-white px-3 py-10 pt-12"
       >
         <ConfirmRidePopUp
+          ride={ride}
           setConfirmRidePopupPanel={setConfirmRidePopupPanel}
           setRidePopupPanel={setRidePopupPanel}
         />

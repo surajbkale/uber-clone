@@ -20,23 +20,16 @@ const UserLogin = () => {
       password: password,
     };
 
-    try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/users/login`,
-        userData
-      );
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/users/login`,
+      userData
+    );
 
-      if (response.status === 200) {
-        const data = response.data;
-        setUser(data.user);
-        localStorage.setItem("token", data.token);
-        navigate("/home");
-      }
-    } catch (error) {
-      console.log(
-        "Logn failed: ",
-        error.response?.data?.message || error.message
-      );
+    if (response.status === 200) {
+      const data = response.data;
+      setUser(data.user);
+      localStorage.setItem("token", data.token);
+      navigate("/home");
     }
 
     setEmail("");

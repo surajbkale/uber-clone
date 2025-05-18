@@ -11,6 +11,8 @@ import WaitingForDriver from "../components/WaitingForDriver.jsx";
 import { SocketContext } from "../context/SocketContext.jsx";
 import { useContext } from "react";
 import { UserDataContext } from "../context/UserContext.jsx";
+import { useNavigate } from "react-router-dom";
+import LiveTracking from "../components/LiveTracking.jsx";
 
 const Home = () => {
   const [pickup, setPickup] = useState("");
@@ -33,6 +35,8 @@ const Home = () => {
   const [vehicleType, setVehicleType] = useState(null);
   const [ride, setRide] = useState(null);
 
+  const navigate = useNavigate();
+
   const { socket } = useContext(SocketContext);
   const { user } = useContext(UserDataContext);
 
@@ -46,58 +50,45 @@ const Home = () => {
     setRide(ride);
   });
 
+  socket.on("ride-started", (ride) => {
+    console.log("ride");
+    setWaitingForDriver(false);
+    navigate("/riding", { state: { ride } }); // Updated navigate to include ride data
+  });
+
   const handlePickupChange = async (e) => {
-    const value = e.target.value;
-    setPickup(value);
-
-    if (!value || value.trim().length < 1) {
-      setPickupSuggestions([]); // clear suggestions if input is empty
-      return;
-    }
-
+    setPickup(e.target.value);
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_BASE_URL}/maps/get-suggestions`,
         {
-          params: { input: value },
+          params: { input: e.target.value },
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
-      setPickupSuggestions(response.data.suggestions); // if your backend sends { suggestions: [...] }
-    } catch (err) {
-      console.error("error here", err);
+      setPickupSuggestions(response.data);
+    } catch {
+      // handle error
     }
   };
 
   const handleDestinationChange = async (e) => {
-    const value = e.target.value;
-    setDestination(value);
-
-    if (!value || value.trim().length < 1) {
-      setDestinationSuggestions([]);
-      return;
-    }
-
+    setDestination(e.target.value);
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_BASE_URL}/maps/get-suggestions`,
         {
-          params: { input: value },
+          params: { input: e.target.value },
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
-
-      if (response.data && response.data.suggestions) {
-        setDestinationSuggestions(response.data.suggestions);
-      } else {
-        setDestinationSuggestions([]);
-      }
-    } catch (err) {
-      console.error("error here", err);
+      setDestinationSuggestions(response.data);
+    } catch {
+      // handle error
     }
   };
 
@@ -204,8 +195,7 @@ const Home = () => {
       }
     );
 
-    setFare(response.data.fare);
-    console.log(response.data.fare);
+    setFare(response.data);
   }
 
   async function createRide() {
@@ -222,8 +212,6 @@ const Home = () => {
         },
       }
     );
-
-    console.log(response.data);
   }
 
   return (
@@ -235,11 +223,7 @@ const Home = () => {
       />
       <div className="h-screen w-screen">
         {/* image for temporary use  */}
-        <img
-          className="h-full w-full object-cover"
-          src="https://miro.medium.com/v2/resize:fit:1400/0*gwMx05pqII5hbfmX.gif"
-          alt=""
-        />
+        <LiveTracking />
       </div>
       <div className=" flex flex-col justify-end h-screen absolute top-0 w-full">
         <div className="h-[30%] p-6 bg-white relative">
