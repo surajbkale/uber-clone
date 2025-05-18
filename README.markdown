@@ -146,12 +146,6 @@ The backend server automatically initializes Socket.io on server start.
 | `update-location-captain` | Send captain's live location data                 |
 | `disconnect`              | Handle user disconnect                            |
 
-## ⚠️ Known Issues
-
-- **CORS on Socket.io**: Ensure your mobile devices use the same public URL via tunneling (e.g., devtunnels, ngrok) for sockets to work.
-- **Localhost Tunnel Limitations**: Some features (login/register via sockets) might not function fully on mobile due to device restrictions on websockets or tracking prevention.
-- **Google Maps API Limit**: Make sure your API key has permissions for Places and Geocoding APIs.
-
 ## 📄 License
 
 This project is for educational and personal learning purposes.
